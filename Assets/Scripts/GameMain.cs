@@ -3,7 +3,8 @@ using System.Collections;
 using UnityEngine.UI;
 
 
-public class GameMain : MonoBehaviour {
+public class GameMain : MonoBehaviour
+{
 
     enum State
     {
@@ -39,7 +40,8 @@ public class GameMain : MonoBehaviour {
     bool[] select = new bool[maxNode];
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         giveupButton.SetActive(false);
         backButton.SetActive(false);
         endButton.SetActive(false);
@@ -50,12 +52,13 @@ public class GameMain : MonoBehaviour {
             select[i] = false;
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
 
 
-        switch(state)
+        switch (state)
         {
             case State.ST_IDLE:
                 break;
@@ -66,12 +69,12 @@ public class GameMain : MonoBehaviour {
                 break;
         }
 
-        
+
     }
 
     //マウスがクリックされたときの処理
     private void MouseEvent()
-    {        
+    {
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 tapPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -80,11 +83,11 @@ public class GameMain : MonoBehaviour {
             if (collider)
             {
                 Image target = collider.transform.gameObject.GetComponent<Image>();
-                int selectNode=0;
+                int selectNode = 0;
                 for (int i = 0; i < nodeCount; i++)
                 {
 
-                    if(select[i])
+                    if (select[i])
                     {
                         continue;
                     }
@@ -138,7 +141,7 @@ public class GameMain : MonoBehaviour {
             int nextIndex = getNext();
             order[nextIndex] = i;
             num = Mathf.Abs(nextIndex - index);
-            if( num > Mathf.Floor(nodeCount / 2))
+            if (num > Mathf.Floor(nodeCount / 2))
             {
                 num = nodeCount - num;
             }
@@ -149,6 +152,12 @@ public class GameMain : MonoBehaviour {
         //最後のノードの数字をランダムに決定
         num = Random.Range(1, (int)Mathf.Floor(nodeCount / 2) + 1);
         setNode(index, num);
+
+        for(int i=0; i<nodeCount; i++)
+        {
+            Debug.Log("i:"+i+"order:"+order[i]+"nodeNums"+nodeNums[i]);
+        } 
+
         state = State.ST_SELECT;
     }
 
@@ -177,12 +186,12 @@ public class GameMain : MonoBehaviour {
 
     private int calcIndex(int index)
     {
-        if(index <0)
+        if (index < 0)
         {
             index += nodeCount;
         }
 
-        if(index > nodeCount)
+        if (index >= nodeCount)
         {
             index -= nodeCount;
         }
@@ -193,6 +202,7 @@ public class GameMain : MonoBehaviour {
     private void setNode(int index, int num)
     {
         nodeNums[index] = num;
+        Debug.Log(num);
         GameObject load = (GameObject)Resources.Load("Prefabs/" + num);
         nodes[index] = (GameObject)Instantiate(load, Vector3.zero, Quaternion.identity);
         nodes[index].transform.SetParent(clock.transform);
