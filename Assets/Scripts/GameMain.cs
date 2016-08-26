@@ -5,6 +5,13 @@ using UnityEngine.UI;
 
 public class GameMain : MonoBehaviour {
 
+    enum State
+    {
+        ST_START, ST_IDLE, ST_SELECT
+    }
+
+    State state = State.ST_START;
+
     [SerializeField]
     private GameObject giveupButton;
     [SerializeField]
@@ -29,6 +36,7 @@ public class GameMain : MonoBehaviour {
     GameObject[] nodes = new GameObject[maxNode];
     int[] order = new int[maxNode];
     int[] nodeNums = new int[maxNode];
+    bool[] select = new bool[maxNode];
 
     // Use this for initialization
     void Start () {
@@ -39,13 +47,31 @@ public class GameMain : MonoBehaviour {
         {
             nodeNums[i] = 0;
             order[i] = 0;
+            select[i] = false;
         }
     }
 	
 	// Update is called once per frame
 	void Update () {
 
-        //マウスがクリックされたときの処理
+
+        switch(state)
+        {
+            case State.ST_IDLE:
+                break;
+            case State.ST_START:
+                break;
+            case State.ST_SELECT:
+                MouseEvent();
+                break;
+        }
+
+        
+    }
+
+    //マウスがクリックされたときの処理
+    private void MouseEvent()
+    {        
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 tapPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -54,17 +80,39 @@ public class GameMain : MonoBehaviour {
             if (collider)
             {
                 Image target = collider.transform.gameObject.GetComponent<Image>();
-
+                int selectNode=0;
                 for (int i = 0; i < nodeCount; i++)
                 {
+
+                    if(select[i])
+                    {
+                        continue;
+                    }
+
                     nodes[i].GetComponent<Image>().color = new Color(1, 1, 1, 0.3f);
 
                     if (nodes[i].GetComponent<Image>().Equals(target))
                     {
-                        Debug.Log(nodes[i].name + i);
+                        //Debug.Log(nodes[i].name + i);
+                        selectNode = i;
+                        select[selectNode] = true;
                     }
                 }
-                collider.transform.gameObject.GetComponent<Image>().color = new Color(0.3f, 0.3f, 0.3f, 1);
+                target.color = new Color(0.3f, 0.3f, 0.3f, 1);
+
+                int nextNode = selectNode + nodeNums[selectNode];
+                nextNode = calcIndex(nextNode);
+                if (!select[nextNode])
+                {
+                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                }
+
+                nextNode = selectNode - nodeNums[selectNode];
+                nextNode = calcIndex(nextNode);
+                if (!select[nextNode])
+                {
+                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                }
             }
         }
     }
@@ -101,6 +149,7 @@ public class GameMain : MonoBehaviour {
         //最後のノードの数字をランダムに決定
         num = Random.Range(1, (int)Mathf.Floor(nodeCount / 2) + 1);
         setNode(index, num);
+        state = State.ST_SELECT;
     }
 
     private int getNext()
@@ -121,16 +170,24 @@ public class GameMain : MonoBehaviour {
         while (order[nextIndex] != 0)
         {
             nextIndex += plmi;
-            if (nextIndex < 0)
-            {
-                nextIndex += nodeCount;
-            }
-            else if (nextIndex >= nodeCount)
-            {
-                nextIndex -= nodeCount;
-            }
+            nextIndex = calcIndex(nextIndex);
         }
         return nextIndex;
+    }
+
+    private int calcIndex(int index)
+    {
+        if(index <0)
+        {
+            index += nodeCount;
+        }
+
+        if(index > nodeCount)
+        {
+            index -= nodeCount;
+        }
+
+        return index;
     }
 
     private void setNode(int index, int num)
@@ -160,8 +217,8 @@ public class GameMain : MonoBehaviour {
         {
             nodeNums[i] = 0;
             order[i] = 0;
+            select[i] = false;
         }
-
+        state = State.ST_START;
     }
-
 }
