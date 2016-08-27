@@ -8,7 +8,7 @@ public class GameMain : MonoBehaviour
 
     enum State
     {
-        ST_START, ST_IDLE, ST_SELECT
+        ST_START, ST_IDLE, ST_SELECT, ST_CLEAR, ST_OVER
     }
 
     State state = State.ST_START;
@@ -23,6 +23,11 @@ public class GameMain : MonoBehaviour
     private GameObject startButton;
     [SerializeField]
     private GameObject endButton;
+
+    [SerializeField]
+    private GameObject gameClear;
+    [SerializeField]
+    private GameObject gameOver;
 
     private int nodeCount;
 
@@ -45,6 +50,8 @@ public class GameMain : MonoBehaviour
         giveupButton.SetActive(false);
         backButton.SetActive(false);
         endButton.SetActive(false);
+        gameClear.SetActive(false);
+        gameOver.SetActive(false);
         for (int i = 0; i < nodeCount; i++)
         {
             nodeNums[i] = 0;
@@ -64,11 +71,17 @@ public class GameMain : MonoBehaviour
                 break;
             case State.ST_START:
                 break;
+            case State.ST_CLEAR:
+                gameClear.SetActive(true);
+                break;
+            case State.ST_OVER:
+                gameOver.SetActive(true);
+                break;
             case State.ST_SELECT:
                 MouseEvent();
+                
                 break;
         }
-
 
     }
 
@@ -105,9 +118,11 @@ public class GameMain : MonoBehaviour
 
                 int nextNode = selectNode + nodeNums[selectNode];
                 nextNode = calcIndex(nextNode);
+                bool over = true;
                 if (!select[nextNode])
                 {
                     nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                    over = false;
                 }
 
                 nextNode = selectNode - nodeNums[selectNode];
@@ -115,6 +130,25 @@ public class GameMain : MonoBehaviour
                 if (!select[nextNode])
                 {
                     nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                    over = false;
+                }
+
+                if(over)
+                {
+                    state = State.ST_OVER;
+                }
+                bool result = true;
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    result &= select[i];
+                    if(over)
+                    {
+                        Debug.Log(i+""+select[i]);
+                    }
+                }
+                if (result)
+                {
+                    state = State.ST_CLEAR;
                 }
             }
         }
@@ -152,11 +186,6 @@ public class GameMain : MonoBehaviour
         //最後のノードの数字をランダムに決定
         num = Random.Range(1, (int)Mathf.Floor(nodeCount / 2) + 1);
         setNode(index, num);
-
-        for(int i=0; i<nodeCount; i++)
-        {
-            Debug.Log("i:"+i+"order:"+order[i]+"nodeNums"+nodeNums[i]);
-        } 
 
         state = State.ST_SELECT;
     }
@@ -202,7 +231,6 @@ public class GameMain : MonoBehaviour
     private void setNode(int index, int num)
     {
         nodeNums[index] = num;
-        Debug.Log(num);
         GameObject load = (GameObject)Resources.Load("Prefabs/" + num);
         nodes[index] = (GameObject)Instantiate(load, Vector3.zero, Quaternion.identity);
         nodes[index].transform.SetParent(clock.transform);
@@ -215,6 +243,8 @@ public class GameMain : MonoBehaviour
         giveupButton.SetActive(false);
         backButton.SetActive(false);
         endButton.SetActive(false);
+        gameClear.SetActive(false);
+        gameOver.SetActive(false);
         startButton.SetActive(true);
         numberSelect.gameObject.SetActive(true);
 
