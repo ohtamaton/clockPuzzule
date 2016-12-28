@@ -19,7 +19,7 @@ public class MouseClicked : MonoBehaviour {
             if (aCollider2d)
             {
                 GameObject obj = aCollider2d.transform.gameObject;
-                Debug.Log(obj.name);
+                //Debug.Log(obj.name);
             }
         }
     }

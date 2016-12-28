@@ -1,18 +1,30 @@
-﻿using UnityEngine;
+﻿/**
+ * GameMain.cs
+ * 
+ * 時計盤パズルのゲームメイン処理クラス. 
+ *
+ * @author ys.ohta
+ * @version 1.0
+ * @date 2016/08/08
+ */
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 
-
+/**
+ * GameMain.cs
+ */
 public class GameMain : MonoBehaviour
 {
-
     enum State
     {
         ST_START, ST_IDLE, ST_SELECT, ST_CLEAR, ST_OVER
     }
 
+    //Game State
     State state = State.ST_START;
 
+    //GUI parts
     [SerializeField]
     private GameObject giveupButton;
     [SerializeField]
@@ -24,14 +36,13 @@ public class GameMain : MonoBehaviour
     [SerializeField]
     private GameObject endButton;
 
+    //GUI Labels
     [SerializeField]
     private GameObject gameClear;
     [SerializeField]
     private GameObject gameOver;
 
     private int nodeCount;
-
-    private Image one;
 
     [SerializeField]
     private GameObject clock;
@@ -52,7 +63,8 @@ public class GameMain : MonoBehaviour
         endButton.SetActive(false);
         gameClear.SetActive(false);
         gameOver.SetActive(false);
-        for (int i = 0; i < nodeCount; i++)
+
+        for (int i = 0; i < maxNode; i++)
         {
             nodeNums[i] = 0;
             order[i] = 0;
