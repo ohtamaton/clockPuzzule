@@ -19,6 +19,13 @@ public class GameMain : MonoBehaviour
 //===========================================================
 // 変数宣言
 //===========================================================
+
+    //---------------------------------------------------
+    // public
+    //---------------------------------------------------
+
+    //None.
+
     //---------------------------------------------------
     // private
     //---------------------------------------------------
@@ -53,12 +60,6 @@ public class GameMain : MonoBehaviour
     private int r = 190;
 
     //---------------------------------------------------
-    // public
-    //---------------------------------------------------
-
-    //None.
-
-    //---------------------------------------------------
     // others
     //---------------------------------------------------
 
@@ -81,146 +82,13 @@ public class GameMain : MonoBehaviour
     //時計盤パズルの各ノードが既に選択済かどうかを記憶する配列
     bool[] select = new bool[maxNode];
 
-    //===========================================================
-    // 関数定義
-    //===========================================================
+//===========================================================
+// 関数定義
+//===========================================================
 
-    /**
-     * 本クラス生成時の初期化処理
-     * @params
-     * @retrun
-     **/
-    void Start()
-    {
-        //GUIボタンの表示状態の初期化
-        endButton.SetActive(false);
-        gameClear.SetActive(false);
-        gameOver.SetActive(false);
-        // For the future upgrade
-        //giveupButton.SetActive(false);
-        //backButton.SetActive(false);
-
-        //各ゲーム状態の記憶用配列の初期化
-        for (int i = 0; i < maxNode; i++)
-        {
-            nodeNums[i] = 0;
-            order[i] = 0;
-            select[i] = false;
-        }
-    }
-
-    /**
-     * ゲームループで毎回呼ばれる処理
-     * @params
-     * @retrun
-     **/
-    void Update()
-    {
-        switch (state)
-        {
-            case State.ST_START:
-                break;
-            case State.ST_CLEAR:
-                gameClear.SetActive(true);
-                break;
-            case State.ST_OVER:
-                gameOver.SetActive(true);
-                break;
-            case State.ST_MAIN:
-                Main();                
-                break;
-        }
-    }
-
-    /**
-     * マウスクリック時のイベント処理
-     * @params
-     * @return
-     **/
-    private void Main()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Vector3 tapPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Collider2D collider = Physics2D.OverlapPoint(tapPoint);
-            if (collider)
-            {
-                //マウスでクリックされたゲームオブジェクトのImageを取得
-                Image target = collider.transform.gameObject.GetComponent<Image>();
-                //クリックされたノードの位置の初期化
-                int selectNode = 0;
-                for (int i = 0; i < nodeCount; i++)
-                {
-                    if (select[i]) //既に選択済のノードは処理スキップ
-                    {
-                        continue;
-                    }
-
-                    //選択されたもの以外のノードの色を半透明に設定する
-                    nodes[i].GetComponent<Image>().color = new Color(1, 1, 1, 0.3f);
-                    
-                    //選択されたノードの位置、ノード選択状態を記憶
-                    if (nodes[i].GetComponent<Image>().Equals(target))
-                    {
-                        //Debug.Log(nodes[i].name + i);
-                        selectNode = i;
-                        select[selectNode] = true;
-                    }
-                }
-                //選択されたノードの色の明度を暗めに設定する
-                target.color = new Color(0.3f, 0.3f, 0.3f, 1);
-
-                //次に移動できるノードの位置を計算
-                int nextNode = selectNode + nodeNums[selectNode];
-                nextNode = calcIndex(nextNode);
-
-                //ゲームオーバまたはクリアか、そうでないかの判定結果を入れる変数
-                bool over = true;
-                if (!select[nextNode])
-                {
-                    //次に移動できるノードがある場合は、そのノードの色の設定をデフォルトに戻す
-                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
-                    //次に移動できるノードがある場合は、まだゲーム終了でないと判定
-                    over = false;
-                }
-
-                //次に移動できるノードの位置を計算
-                nextNode = selectNode - nodeNums[selectNode];
-                nextNode = calcIndex(nextNode);
-                if (!select[nextNode])
-                {
-                    //次に移動できるノードがある場合は、そのノードの色の設定をデフォルトに戻す
-                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
-                    //次に移動できるノードがある場合は、まだゲーム終了でないと判定
-                    over = false;
-                }
-
-                if(over)
-                {
-                    //ゲームが終了ならゲーム状態をOVERに設定
-                    state = State.ST_OVER;
-                }
-
-                //クリアかオーバかを判定
-                bool result = true;
-                for (int i = 0; i < nodeCount; i++)
-                {
-                    //すべてのノードが選択済であればゲームクリア
-                    result &= select[i];
-#if DEGUB
-                    if(over)
-                    {
-                        Debug.Log(i+""+select[i]);
-                    }
-#endif
-                }
-                if (result)
-                {
-                    state = State.ST_CLEAR;
-                }
-            }
-        }
-    }
+    //---------------------------------------------------
+    // public
+    //---------------------------------------------------
 
     /**
      * ゲームの初期化処理
@@ -272,6 +140,44 @@ public class GameMain : MonoBehaviour
 
         state = State.ST_MAIN;
     }
+
+    /**
+     * ゲーム状態のリセット処理
+     * @param
+     * @return
+     **/
+    public void gameReset()
+    {
+        //GUIボタン状態のリセット
+        endButton.SetActive(false);
+        gameClear.SetActive(false);
+        gameOver.SetActive(false);
+        startButton.SetActive(true);
+        numberSelect.gameObject.SetActive(true);
+
+        // For the future upgrade
+        //giveupButton.SetActive(false);
+        //backButton.SetActive(false);
+
+        //時計盤パズルのノードのゲームオブジェクトの削除
+        for (int i = 0; i < nodeCount; i++)
+        {
+            Destroy(nodes[i]);
+        }
+
+        //ノードの数字とハミルトンパスの順序初期化
+        for (int i = 0; i < nodeCount; i++)
+        {
+            nodeNums[i] = 0;
+            order[i] = 0;
+            select[i] = false;
+        }
+        state = State.ST_START;
+    }
+
+    //---------------------------------------------------
+    // private
+    //---------------------------------------------------
 
     /**
      * 時計盤パズル出題のランダム生成時の次ノードの位置を決定する
@@ -345,37 +251,144 @@ public class GameMain : MonoBehaviour
         nodes[index].transform.localPosition = new Vector3(r * Mathf.Sin(Mathf.PI * 2 * index / nodeCount), r * Mathf.Cos(Mathf.PI * 2 * index / nodeCount), 0);
     }
 
+    //---------------------------------------------------
+    // other
+    //---------------------------------------------------
+
     /**
-     * ゲーム状態のリセット処理
-     * @param
-     * @return
+     * 本クラス生成時の初期化処理
+     * @params
+     * @retrun
      **/
-    public void gameReset()
+    void Start()
     {
-        //GUIボタン状態のリセット
+        //GUIボタンの表示状態の初期化
         endButton.SetActive(false);
         gameClear.SetActive(false);
         gameOver.SetActive(false);
-        startButton.SetActive(true);
-        numberSelect.gameObject.SetActive(true);
-
         // For the future upgrade
         //giveupButton.SetActive(false);
         //backButton.SetActive(false);
 
-        //時計盤パズルのノードのゲームオブジェクトの削除
-        for (int i = 0; i < nodeCount; i++)
-        {
-            Destroy(nodes[i]);
-        }
-
-        //ノードの数字とハミルトンパスの順序初期化
-        for (int i = 0; i < nodeCount; i++)
+        //各ゲーム状態の記憶用配列の初期化
+        for (int i = 0; i < maxNode; i++)
         {
             nodeNums[i] = 0;
             order[i] = 0;
             select[i] = false;
         }
-        state = State.ST_START;
+    }
+
+    /**
+     * ゲームループで毎回呼ばれる処理
+     * @params
+     * @retrun
+     **/
+    void Update()
+    {
+        switch (state)
+        {
+            case State.ST_START:
+                break;
+            case State.ST_CLEAR:
+                gameClear.SetActive(true);
+                break;
+            case State.ST_OVER:
+                gameOver.SetActive(true);
+                break;
+            case State.ST_MAIN:
+                Main();
+                break;
+        }
+    }
+
+    /**
+     * マウスクリック時のイベント処理
+     * @params
+     * @return
+     **/
+    private void Main()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 tapPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Collider2D collider = Physics2D.OverlapPoint(tapPoint);
+            if (collider)
+            {
+                //マウスでクリックされたゲームオブジェクトのImageを取得
+                Image target = collider.transform.gameObject.GetComponent<Image>();
+                //クリックされたノードの位置の初期化
+                int selectNode = 0;
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    if (select[i]) //既に選択済のノードは処理スキップ
+                    {
+                        continue;
+                    }
+
+                    //選択されたもの以外のノードの色を半透明に設定する
+                    nodes[i].GetComponent<Image>().color = new Color(1, 1, 1, 0.3f);
+
+                    //選択されたノードの位置、ノード選択状態を記憶
+                    if (nodes[i].GetComponent<Image>().Equals(target))
+                    {
+                        //Debug.Log(nodes[i].name + i);
+                        selectNode = i;
+                        select[selectNode] = true;
+                    }
+                }
+                //選択されたノードの色の明度を暗めに設定する
+                target.color = new Color(0.3f, 0.3f, 0.3f, 1);
+
+                //次に移動できるノードの位置を計算
+                int nextNode = selectNode + nodeNums[selectNode];
+                nextNode = calcIndex(nextNode);
+
+                //ゲームオーバまたはクリアか、そうでないかの判定結果を入れる変数
+                bool over = true;
+                if (!select[nextNode])
+                {
+                    //次に移動できるノードがある場合は、そのノードの色の設定をデフォルトに戻す
+                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                    //次に移動できるノードがある場合は、まだゲーム終了でないと判定
+                    over = false;
+                }
+
+                //次に移動できるノードの位置を計算
+                nextNode = selectNode - nodeNums[selectNode];
+                nextNode = calcIndex(nextNode);
+                if (!select[nextNode])
+                {
+                    //次に移動できるノードがある場合は、そのノードの色の設定をデフォルトに戻す
+                    nodes[nextNode].GetComponent<Image>().color = new Color(1, 1, 1, 1);
+                    //次に移動できるノードがある場合は、まだゲーム終了でないと判定
+                    over = false;
+                }
+
+                if (over)
+                {
+                    //ゲームが終了ならゲーム状態をOVERに設定
+                    state = State.ST_OVER;
+                }
+
+                //クリアかオーバかを判定
+                bool result = true;
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    //すべてのノードが選択済であればゲームクリア
+                    result &= select[i];
+#if DEGUB
+                    if(over)
+                    {
+                        Debug.Log(i+""+select[i]);
+                    }
+#endif
+                }
+                if (result)
+                {
+                    state = State.ST_CLEAR;
+                }
+            }
+        }
     }
 }
